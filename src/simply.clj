@@ -29,6 +29,11 @@
 (defmacro defni [name args & body]
   `(def ~name (fni ~args ~@body))
   )
+
+(defmacro defni- [name & decls]
+  (list* `defni (with-meta name (assoc (meta name) :private true)) decls)
+  )
+
 ;; }}}
 
 ;; =OUTPUT ------------------------------- {{{
@@ -72,12 +77,18 @@
   )
 
 (defn fold [f val seq]
+  {:pre [(seq? seq)]}
   (loop [res val, ls seq]
     (if (empty? ls)
       res
       (recur (f (first ls) res) (rest ls))
       )
     )
+  )
+
+(defni r-fold [f val seq]
+  (fold f val seq)
+  (if (seq? %) (reverse %) %)
   )
 ;; }}}
 

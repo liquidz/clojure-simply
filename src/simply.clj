@@ -4,13 +4,13 @@
 
 ;; DEF {{{
 (defmacro with-implicit-symbol [s & body]
-  (let [[fst & more] body ]
-    (if (empty? more)
-      `(do ~@fst)
+  (if (> (count body) 1)
+    (let [[fst & more] body ]
       (list 'let `[~s ~fst]
-            (with-implicit-symbol s `(~@more))
+            `(with-implicit-symbol ~s ~@more)
             )
       )
+    (first body)
     )
   )
 

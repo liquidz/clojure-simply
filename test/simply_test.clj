@@ -3,6 +3,8 @@
   (:use [clojure.test]))
 
 (deftest test-with-implicit-symbol
+  (is (with-implicit-symbol _ true))
+  (is (with-implicit-symbol _ (= 1 1)))
   (is (with-implicit-symbol _ (+ 1 2) (= 3 _)))
   (is (not (with-implicit-symbol _ (+ 1 2) (= 4 _))))
   (is (with-implicit (+ 1 2) (= 3 %)))

@@ -15,7 +15,7 @@
   )
 
 (defmacro with-implicit [& body]
-  `(with-implicit-symbol ~(symbol "%") ~@body)
+  `(with-implicit-symbol ~(quote %) ~@body)
   )
 
 (defmacro defi [name & body]

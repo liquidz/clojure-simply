@@ -5,13 +5,26 @@ write clojure code more simply
 
     (defproject your-project "0.0.1-SNAPSHOT"
 	  :description ""
-	  :dependencies [[org.clojars.liquidz/simply "0.0.1"]]
+	  :dependencies [[org.clojars.liquidz/simply "0.0.2"]]
 	  )
 
 ## Usage
     (ns your-namespace
 	  (:use simply)
 	  )
+
+	; implicit-symbol
+	(with-implicit
+	  (+ 1 2)
+	  (= 3 %) ; % = (+ 1 2) = 3
+	  (if % "ok" "ng") ; => "ok"
+	  )
+
+	(defni implicit-fun [x]
+	  (+ 1 x)
+	  (= 3 %)
+	  )
+	(implicit-function 2) ; => true
 
 	; simply print
 	(p + 1 2 3) ; => (println (+ 1 2 3))

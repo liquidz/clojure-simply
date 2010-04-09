@@ -1,6 +1,7 @@
 (ns simply
   (:require [clojure.contrib.seq-utils :as squ])
   (:require [clojure.contrib.str-utils2 :as su2])
+  (:require [clojure.contrib.def :as cd])
   )
 
 (declare
@@ -19,47 +20,22 @@
     (first body)
     )
   )
-
 (defmacro with-implicit [& body]
   `(with-implicit-symbol ~(quote %) ~@body)
   )
 
-(defmacro defi [name & body]
-  `(def ~name (with-implicit ~@body))
-  )
-
+(defmacro defi [name & body] `(def ~name (with-implicit ~@body)))
 (defmacro fni [args & body]
-  `(fn ~args (with-implicit ~@body))
+  (if (and (rest body) (map? (first body)))
+    `(fn ~args ~(first body) (with-implicit ~@(rest body)))
+    `(fn ~args (with-implicit ~@body))
+    )
   )
-
-(defmacro defni [name args & body]
-  `(def ~name (fni ~args ~@body))
-  )
-
+(defmacro defni [name args & body] `(def ~name (fni ~args ~@body)))
 (defmacro defni- [name & decls]
   (list* `defni (with-meta name (assoc (meta name) :private true)) decls)
   )
 
-(defn- collect-keywords [from to]
-  {:pre [(and (zero? (rem (count from) 2)) (zero? (rem (count to) 2)))]}
-  (let [from-pair (partition 2 from)
-        to-pair (partition 2 to)
-        ]
-    (map (fni [x]
-           (squ/find-first #(= (first x) (first %)) from-pair)
-           (if (nil? %) x %)
-           )
-         to-pair)
-    )
-  )
-
-(defmacro let-keywords [base key-map & body]
-  (let [base-ls (map #(if (keyword? %) (keyword->symbol %) %) base)
-        args (squ/flatten (collect-keywords base-ls key-map))
-        ]
-    `(let [~@args] ~@body)
-    )
-  )
 ;; }}}
 
 ;; =OUTPUT ------------------------------- {{{
@@ -95,14 +71,24 @@
 ;; }}}
 
 ;; =SEQUENCE ------------------------------- {{{
-(defn foreach [f & seq-exprs]
+(defn foreach
+  "(foreach function sequences*)
+
+  ex. (foreach println '(1 2 3) '(4 5 6)) ; => 123456nil
+  "
+  [f & seq-exprs]
   {:pre [(every? seq? seq-exprs)]}
   (doseq [seq seq-exprs]
     (doseq [x seq] (f x))
     )
   )
 
-(defn fold [f val seq]
+(defn fold
+  "(fold (fn [item result] exprs*) initial-value sequence)
+
+   ex. (fold cons () '(1 2 3)) ; => (3 2 1)
+  "
+  [f val seq]
   {:pre [(seq? seq)]}
   (loop [res val, ls seq]
     (if (empty? ls)

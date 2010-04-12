@@ -9,10 +9,6 @@
   (is (not (with-implicit-symbol _ (+ 1 2) (= 4 _))))
   (is (with-implicit (+ 1 2) (= 3 %)))
   (is (not (with-implicit (+ 1 2) (= 4 %))))
-  (defi _t (+ 1 2) (= 3 %))
-  (defi _t! (+ 1 2) (= 4 %))
-  (is _t)
-  (is (not _t!))
   (is ((fni [x] (+ 1 x) (= 3 %)) 2))
   (is (not ((fni [x] (+ 1 x) (= 4 %)) 2)))
   (defni _t2 [x] (+ 1 x) (= 3 %))
@@ -23,6 +19,15 @@
            ]
     (is (g (f 2)))
     (is (not (g (f 3))))
+    )
+  )
+
+(deftest test-defnk
+  (let [f (fnk [a :b 1 :c 2] (+ a (* b 2) (* c 3)))]
+    (is (= 9 (f 1)))
+    (is (= 11 (f 1 :b 2)))
+    (is (= 12 (f 1 :c 3)))
+    (is (= 14 (f 1 :c 3 :b 2)))
     )
   )
 

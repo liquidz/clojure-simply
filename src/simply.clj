@@ -10,6 +10,7 @@
   )
 
 ;; DEF {{{
+; =with-implicit-symbol
 (defmacro with-implicit-symbol [s & body]
   (if (> (count body) 1)
     (let [[fst & more] body ]
@@ -24,49 +25,56 @@
   `(with-implicit-symbol ~(quote %) ~@body)
   )
 
-(defmacro defi [name & body] `(def ~name (with-implicit ~@body)))
+; =defni
 (defmacro fni [args & body]
   (if (and (rest body) (map? (first body)))
     `(fn ~args ~(first body) (with-implicit ~@(rest body)))
     `(fn ~args (with-implicit ~@body))
     )
   )
-(defmacro defni [name args & body] `(def ~name (fni ~args ~@body)))
+(defmacro defni [name & body] `(def ~name (fni ~@body)))
 (defmacro defni- [name & decls]
   (list* `defni (with-meta name (assoc (meta name) :private true)) decls)
   )
 (defmacro letfni [fnspecs & body]
-  (let [args (map
-               (fn [x]
-                 (let [[name arg & f-body] x]
-                   `(~name ~arg (with-implicit ~@f-body))
-                   )
-                 )
-               fnspecs
-               )
+  (let [args (map (fn [x]
+                    (let [[name arg & f-body] x]
+                      `(~name ~arg (with-implicit ~@f-body))
+                      )
+                    )
+                  fnspecs
+                  )
         ]
     `(letfn [~@args] ~@body)
     )
   )
 
-; copy of clojure.contrib.def/defnk
+; =defnk
 (defmacro fnk [args & body]
   (let [[fixed-args k-args] (split-with symbol? args)
         s-args (map #(if (keyword? %) (keyword->symbol %) %) k-args)
         keywords (filter symbol? s-args)
-        default-map (apply has-map s-args)
+        default-map (apply hash-map s-args)
+        [condition-map & rest-body] (if (and (rest body) (map? (first body))) body (cons () body))
         ]
     `(fn [~@fixed-args & more#]
+       ~condition-map
        (let [{:keys [~@keywords] :or ~default-map} (apply hash-map more#)]
-         ~@body
+         ~@rest-body
          )
        )
     )
   )
-
+(defmacro defnk [fname & frest]
+  `(def ~fname (fnk ~@frest))
+  )
+(defmacro defnk- [name & decls]
+  (list* `defnk (with-meta name (assoc (meta name) :private true)) decls)
+  )
 ;; }}}
 
 ;; =OUTPUT ------------------------------- {{{
+; =p
 (defmacro p
   ([v] `(do (println ~v) ~v))
   ([l & args]
@@ -79,6 +87,7 @@
 ;; }}}
 
 ;; =CONDITIONS ------------------------------- {{{
+; =!=
 (defn !=
   ([x] true)
   ([x y] (not (= x y)))
@@ -87,6 +96,7 @@
 ;; }}}
 
 ;; =SYMBOL ------------------------------- {{{
+; =keyword->symbol
 (defn keyword->symbol [k]
   {:pre [(keyword? k)] :post [(symbol? %)]}
   (symbol (su2/drop (str k) 1))
@@ -94,11 +104,14 @@
 ;; }}}
 
 ;; =ARITHMETIC ------------------------------- {{{
+; =++
 (def ++ inc)
+; =--
 (def -- dec)
 ;; }}}
 
 ;; =SEQUENCE ------------------------------- {{{
+; =foreach
 (defn foreach
   "(foreach function sequences*)
 
@@ -111,6 +124,7 @@
     )
   )
 
+; =fold
 (defn fold
   "(fold (fn [item result] exprs*) initial-value sequence)
 
@@ -126,6 +140,7 @@
     )
   )
 
+; =r-fold
 (defni r-fold [f val seq]
   (fold f val seq)
   (if (seq? %) (reverse %) %)
@@ -133,13 +148,17 @@
 ;; }}}
 
 ;; =STRING ------------------------------- {{{
-(defn str-convert-encode [encoding & strs]
+; =str-convert-encoding
+(defn str-convert-encoding [encoding & strs]
   {:pre [(string? encoding)]
    :post [(string? %)]
    }
   (String. (.getBytes (apply str strs) encoding))
   )
-(def to-utf8 (partial str-convert-encode "UTF-8"))
-(def to-euc (partial str-convert-encode "EUC-JP"))
-(def to-sjis (partial str-convert-encode "Shift_JIS"))
+; =to-utf8
+(def to-utf8 (partial str-convert-encoding "UTF-8"))
+; =to-euc
+(def to-euc (partial str-convert-encoding "EUC-JP"))
+; =to-sjis
+(def to-sjis (partial str-convert-encoding "Shift_JIS"))
 ;; }}}

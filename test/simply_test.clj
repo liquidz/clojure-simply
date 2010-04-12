@@ -18,6 +18,12 @@
   (defni _t2 [x] (+ 1 x) (= 3 %))
   (is (_t2 2))
   (is (not (_t2 3)))
+  (letfni [(f [x] (inc x) (= % 3))
+           (g [x] (= x true))
+           ]
+    (is (g (f 2)))
+    (is (not (g (f 3))))
+    )
   )
 
 (deftest test-p

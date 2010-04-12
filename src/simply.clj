@@ -35,6 +35,34 @@
 (defmacro defni- [name & decls]
   (list* `defni (with-meta name (assoc (meta name) :private true)) decls)
   )
+(defmacro letfni [fnspecs & body]
+  (let [args (map
+               (fn [x]
+                 (let [[name arg & f-body] x]
+                   `(~name ~arg (with-implicit ~@f-body))
+                   )
+                 )
+               fnspecs
+               )
+        ]
+    `(letfn [~@args] ~@body)
+    )
+  )
+
+; copy of clojure.contrib.def/defnk
+(defmacro fnk [args & body]
+  (let [[fixed-args k-args] (split-with symbol? args)
+        s-args (map #(if (keyword? %) (keyword->symbol %) %) k-args)
+        keywords (filter symbol? s-args)
+        default-map (apply has-map s-args)
+        ]
+    `(fn [~@fixed-args & more#]
+       (let [{:keys [~@keywords] :or ~default-map} (apply hash-map more#)]
+         ~@body
+         )
+       )
+    )
+  )
 
 ;; }}}
 

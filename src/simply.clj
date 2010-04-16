@@ -7,6 +7,7 @@
 (declare
   != keyword->symbol ++ -- foreach fold r-fold 
   str-convert-encode to-utf8 to-euc to-sjis
+  key-value-seq?
   )
 
 ;; DEF {{{
@@ -99,7 +100,7 @@
 ; =keyword->symbol
 (defn keyword->symbol [k]
   {:pre [(keyword? k)] :post [(symbol? %)]}
-  (symbol (su2/drop (str k) 1))
+  (-> k name symbol)
   )
 ;; }}}
 
@@ -145,6 +146,16 @@
   (fold f val seq)
   (if (seq? %) (reverse %) %)
   )
+
+; =key-value-seq?
+(defn key-value-seq? [seq]
+  (and
+    (seq? seq)
+    (not (empty? seq))
+    (zero? (rem (count seq) 2))
+    (every? keyword? (map first (partition 2 seq)))
+    )
+  )
 ;; }}}
 
 ;; =STRING ------------------------------- {{{
@@ -161,4 +172,27 @@
 (def to-euc (partial str-convert-encoding "EUC-JP"))
 ; =to-sjis
 (def to-sjis (partial str-convert-encoding "Shift_JIS"))
+;; }}}
+
+;; =STRUCT ------------------------------- {{{
+; =ref?
+(defn ref? [x] (= clojure.lang.Ref (class x)))
+; =ref-struct
+(defn ref-struct [struct-name & keys]
+  (ref (apply struct (cons struct-name keys)))
+  )
+; =update-struct
+(defn update-struct [ref & kv]
+  {:pre [(ref? ref)
+         (key-value-seq? kv)
+         ]
+   }
+  (dosync
+    (ref-set
+      ref
+      (apply assoc (cons @ref kv))
+      )
+    )
+  ref
+  )
 ;; }}}

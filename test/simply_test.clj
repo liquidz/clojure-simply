@@ -72,5 +72,38 @@
   (is (thrown? java.lang.AssertionError (r-fold #(cons %1 %2) '() "neko")))
   )
 
+(deftest test-key-value-seq?
+  (is (not (key-value-seq? nil)))
+  (is (not (key-value-seq? ())))
+  (is (key-value-seq? '(:a 1 :b 2 :c 3)))
+  (is (not (key-value-seq? '(:a 1 2 :c 3))))
+  (is (not (key-value-seq? '(:a 1 2 3 :c 4))))
+  )
+
+(deftest test-struct
+  (defstruct teststruct :a :b :c)
+  (let [x (struct teststruct 1 2 3)
+        y (ref-struct teststruct 10 20 30)
+        ]
+
+    (is (ref? (ref x)))
+    (is (ref? y))
+    (is (not (ref? 123)))
+    (is (not (ref? "hello")))
+
+    (is (map? @y))
+    (is (= 10 (:a @y)))
+    (is (= 20 (:b @y)))
+    (is (= 30 (:c @y)))
+
+    (update-struct y :a 1)
+    (is (= 1 (:a @y)))
+    (update-struct y :b 2 :c 3 :d 4)
+    (is (and (= 2 (:b @y)) (= 3 (:c @y)) (= 4 (:d @y))))
+    (is (thrown? java.lang.AssertionError (update-struct "hello" :a 1 2)))
+    (is (thrown? java.lang.AssertionError (update-struct y :a 1 2)))
+    (is (thrown? java.lang.AssertionError (update-struct y :a 1 2 3)))
+    )
+  )
 
 

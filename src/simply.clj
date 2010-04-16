@@ -74,6 +74,32 @@
   )
 ;; }}}
 
+;; COND {{{
+(defn caar [col] (-> col first first))
+(defn cddr [col] (-> col rest rest))
+
+(defmacro let-cond [bindings & clauses]
+  `(let [~@bindings]
+     (cond ~@clauses)
+     )
+  )
+
+(defmacro my-test-let [bindings & body]
+  (let [args (loop [b bindings, res ()]
+               (let-cond [top (first b)]
+                 (empty? b) res
+                 (symbol? top) (recur (cddr b) (concat res (list top (second b))))
+                 :else (recur (rest b) (concat res (list (first top)
+                                                         (->> top (drop 1) (cons 'fn))))
+                              )
+                 )
+               )
+        ]
+    `(let [~@args] ~@body)
+    )
+  )
+;; }}}
+
 ;; =OUTPUT ------------------------------- {{{
 ; =p
 (defmacro p

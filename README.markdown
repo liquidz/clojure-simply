@@ -26,10 +26,6 @@ write clojure code more simply
 	  )
 	(implicit-function 2) ; => true
 
-	; def multiple values
-	(defs [a b c] (list 1 2 3))
-	; => (do (def a 1) (def b 2) (def c 3))
-
 	; simply print
 	(p + 1 2 3) ; => (println (+ 1 2 3))
 

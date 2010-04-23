@@ -73,14 +73,6 @@
   (list* `defnk (with-meta name (assoc (meta name) :private true)) decls)
   )
 
-; =defs
-(defmacro defs [names fn-ls]
-  (cons 'do
-        (map (fn [[n e]] (list 'def `~n e))
-             (partition 2 (interleave names (eval fn-ls))))
-        )
-  )
-
 ;; }}}
 
 ;; =OUTPUT ------------------------------- {{{

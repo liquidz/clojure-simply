@@ -31,20 +31,6 @@
     )
   )
 
-(deftest test-defs
-  (is (defs [a b c] (list 1 2 3)))
-  (is (= a 1))
-  (is (= b 2))
-  (is (= c 3))
-
-  (is (defs [aa bb] (list 1 2 3)))
-  (is (= aa 1))
-  (is (= bb 2))
-
-  (is (defs [aaa bbb] (list 1)))
-  (is (= aaa 1))
-  )
-
 (deftest test-p
   (is (p true))
   (is (= 3 (p + 1 2)))

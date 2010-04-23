@@ -106,4 +106,14 @@
     )
   )
 
+(deftest test-match?
+  (is (match? #"^h"))
+  (is (match? #"^h" "hello"))
+  (is (not (match? #"^e" "hello")))
+  (is (match? #"^h" "hello" "heiho"))
+  (is (not (match? #"^h" "hello" "world")))
+  (is (not (match? #"^h" "world" "hello")))
+  (is (not (match? #"^h" "neko" "world")))
+  )
+
 

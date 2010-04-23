@@ -37,8 +37,12 @@
   )
 
 (deftest test-!=
-  (is (!= true false))
-  (is (not (!= true true)))
+  (is (! false))
+  (is (not (! true)))
+  (is (! = true false))
+  (is (not (! = true true)))
+  (is (! = true false true))
+  (is (! = 1 2 3))
   )
 
 (deftest test-keyword->symbol
@@ -50,6 +54,21 @@
 (deftest test-arithmetic
   (is (= 2 (++ 1)))
   (is (= 1 (-- 2)))
+  )
+
+(deftest test-caar-cadr-cddr
+  (is (= 1 (caar '((1) (2)))))
+  (is (nil? (caar ())))
+  (is (thrown? java.lang.IllegalArgumentException (caar '(1))))
+
+  (is (= 2 (cadr '(1 2 3))))
+  (is (nil? (cadr ())))
+  (is (nil? (cadr '(1))))
+
+  (is (= '(3) (cddr '(1 2 3))))
+  (is (empty? (cddr ())))
+  (is (empty? (cddr '(1))))
+  (is (empty? (cddr '(1 2))))
   )
 
 (deftest test-foreach

@@ -5,9 +5,9 @@
   )
 
 (declare
-  != keyword->symbol ++ -- foreach fold r-fold 
-  str-convert-encode to-utf8 to-euc to-sjis
-  key-value-seq?
+  keyword->symbol ++ -- caar cadr cddr foreach fold r-fold 
+  key-value-seq? str-convert-encode to-utf8 to-euc to-sjis
+  ref? ref-struct update-struct match?
   )
 
 ;; DEF {{{
@@ -79,8 +79,8 @@
 ; =p
 (defmacro p
   ([v] `(do (println ~v) ~v))
-  ([l & args]
-   `(let [x# (~l ~@args)]
+  ([l & more]
+   `(let [x# (~l ~@more)]
       (println x#)
       x#
       )
@@ -88,12 +88,11 @@
   )
 ;; }}}
 
-;; =CONDITIONS ------------------------------- {{{
-; =!=
-(defn !=
-  ([x] true)
-  ([x y] (not (= x y)))
-  ([x y & more] (and (= x y) (apply = more)))
+;; =CONDITION ------------------------------- {{{
+; =!
+(defmacro !
+  ([v] `(not ~v))
+  ([v & more] `(not (~v ~@more)))
   )
 ;; }}}
 
@@ -112,7 +111,13 @@
 (def -- dec)
 ;; }}}
 
-;; =SEQUENCE ------------------------------- {{{
+;; =COLLECTION ------------------------------- {{{
+; =caar
+(defn caar [col] (-> col first first))
+; =cadr
+(defn cadr [col] (-> col rest first))
+; =cddr
+(defn cddr [col] (-> col rest rest))
 ; =foreach
 (defn foreach
   "(foreach function sequences*)

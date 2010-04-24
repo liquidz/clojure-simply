@@ -119,6 +119,29 @@
   (is (not (key-value-seq? '(:a 1 2 3 :c 4))))
   )
 
+(deftest test-join
+  (is (= "abc" (empty-join '("a" "b" "c"))))
+  (is (= "a\nb\nc") (newline-join '("a" "b" "c")))
+  )
+
+(deftest test-mk-str
+  (is (= "aa" (make-str 2 "a")))
+  (is (= "aa" (make-str 2 \a)))
+  (is (= "00" (make-str 2 0)))
+  (is (= "a" (make-str 1 'a)))
+  (is (thrown? java.lang.AssertionError (make-str 0 "a")))
+  (is (thrown? java.lang.AssertionError (make-str -1 "a")))
+  )
+
+(deftest test-nd
+  (is (= "ca" (nd 2 "a" "c")))
+  (is (= "a" (nd 1 "a" "c")))
+  (is (= "aa" (nd 2 "aa" "c")))
+  (is (= "aaa" (nd 2 "aaa" "c")))
+  (is (thrown? java.lang.AssertionError (nd 0 "a" "c")))
+  (is (thrown? java.lang.AssertionError (nd -1 "a" "c")))
+  )
+
 (deftest test-struct
   (defstruct teststruct :a :b :c)
   (let [x (struct teststruct 1 2 3)

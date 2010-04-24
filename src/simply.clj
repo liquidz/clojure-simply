@@ -7,6 +7,7 @@
 (declare
   keyword->symbol ++ -- caar cadr cddr foreach fold r-fold 
   key-value-seq? str-convert-encode to-utf8 to-euc to-sjis
+  empty-join newline-join make-str nd
   ref? ref-struct update-struct match?
   )
 
@@ -195,6 +196,22 @@
 (def empty-join (partial su2/join ""))
 ; =newline-join
 (def newline-join (partial su2/join "\n"))
+
+; =make-str
+(defn make-str [n s]
+  {:pre [(pos? n)]}
+  (empty-join (map str (take n (repeat s)))))
+; =nd (n-digit)
+(defn nd
+  ([n s c]
+   {:pre [(string? s) (pos? n) (or (string? c) (char? c))]}
+   (let [st (str s), len (count st), cs (str c)]
+     (str (if (< len n) (make-str (- n len) c) "") st)
+     )
+   )
+  ([n s] (nd n s "0"))
+  )
+
 ;; }}}
 
 ;; =STRUCT ------------------------------- {{{

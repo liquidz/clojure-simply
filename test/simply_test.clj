@@ -63,6 +63,19 @@
         "ok" true
         :else false
         ))
+  (let [f (fn [x]
+            (case x
+              [1 2] true
+              3 "ok"
+              :else false
+              )
+            )]
+    (is (f 1))
+    (is (f 2))
+    (is (= "ok" (f 3)))
+    (is (not (f 4)))
+    )
+
   )
 
 (deftest test-keyword->symbol

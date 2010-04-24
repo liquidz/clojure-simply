@@ -97,17 +97,22 @@
   )
 
 ; =case
-(defmacro case [base-value & patterns]
+(defmacro case [base-val & patterns]
   (cons
     'cond
     (fold (fn [[val & more] res]
-            (concat res (list (if (= val :else) val `(= ~base-value ~val)) (first more)))
-            )
+            (concat
+              res
+              (list (cond
+                      (vector? val) `(or ~@(map #(list '= base-val %) val))
+                      (= val :else) val
+                      :else `(= ~base-val ~val))
+                    (first more))))
           ()
-          (partition 2 patterns)
-          )
+          (partition 2 patterns))
     )
   )
+
 ;; }}}
 
 ;; =SYMBOL ------------------------------- {{{
@@ -200,7 +205,8 @@
 ; =make-str
 (defn make-str [n s]
   {:pre [(pos? n)]}
-  (empty-join (map str (take n (repeat s)))))
+  (nth (iterate #(str s %) (str s)) (-- n))
+  )
 ; =nd (n-digit)
 (defn nd
   ([n s c]

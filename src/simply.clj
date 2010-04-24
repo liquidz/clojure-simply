@@ -210,7 +210,7 @@
 ; =nd (n-digit)
 (defn nd
   ([n s c]
-   {:pre [(string? s) (pos? n) (or (string? c) (char? c))]}
+   {:pre [(pos? n) (or (string? c) (char? c))]}
    (let [st (str s), len (count st), cs (str c)]
      (str (if (< len n) (make-str (- n len) c) "") st)
      )

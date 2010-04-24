@@ -153,6 +153,9 @@
   (is (= "aaa" (nd 2 "aaa" "c")))
   (is (thrown? java.lang.AssertionError (nd 0 "a" "c")))
   (is (thrown? java.lang.AssertionError (nd -1 "a" "c")))
+  (is (= "01" (nd 2 1)))
+  (is (= "10" (nd 2 10)))
+  (is (= "100" (nd 2 100)))
   )
 
 (deftest test-struct

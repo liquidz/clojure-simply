@@ -94,6 +94,19 @@
   ([v] `(not ~v))
   ([v & more] `(not (~v ~@more)))
   )
+
+; =case
+(defmacro case [base-value & patterns]
+  (cons
+    'cond
+    (fold (fn [[val & more] res]
+            (concat res (list (if (= val :else) val `(= ~base-value ~val)) (first more)))
+            )
+          ()
+          (partition 2 patterns)
+          )
+    )
+  )
 ;; }}}
 
 ;; =SYMBOL ------------------------------- {{{
@@ -178,6 +191,10 @@
 (def to-euc (partial str-convert-encoding "EUC-JP"))
 ; =to-sjis
 (def to-sjis (partial str-convert-encoding "Shift_JIS"))
+; =empty-join
+(def empty-join (partial su2/join ""))
+; =newline-join
+(def newline-join (partial su2/join "\n"))
 ;; }}}
 
 ;; =STRUCT ------------------------------- {{{

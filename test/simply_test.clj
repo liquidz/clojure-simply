@@ -45,6 +45,26 @@
   (is (! = 1 2 3))
   )
 
+(deftest test-case
+  (is (case 1
+        1 true
+        :else false
+        ))
+  (is (not (case 2
+             1 true
+             :else false
+             )))
+  (is (case :k
+        :k (do false true)
+        :else false
+        ))
+  (is (case "ok"
+        "ng" false
+        "ok" true
+        :else false
+        ))
+  )
+
 (deftest test-keyword->symbol
   (is (= 'test (keyword->symbol :test)))
   (is (not (= 'test (keyword->symbol :xtest))))

@@ -158,6 +158,13 @@
   (is (= "100" (nd 2 100)))
   )
 
+(deftest test-delete-html-tag
+  (is (= "hello" (delete-html-tag "<p>hello</p>")))
+  (is (= "hello" (delete-html-tag "<p><a>hello</a></p>")))
+  (is (= "hello" (delete-html-tag "<p><a href='index.html'>hello</a></p>")))
+  (is (= "hello" (delete-html-tag "<p>h</p><p>e</p><p>l</p><p>l</p><p>o</p>")))
+  )
+
 (deftest test-struct
   (defstruct teststruct :a :b :c)
   (let [x (struct teststruct 1 2 3)

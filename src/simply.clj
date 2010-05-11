@@ -140,7 +140,6 @@
 ; =foreach
 (defn foreach
   "(foreach function sequences*)
-
   ex. (foreach println '(1 2 3) '(4 5 6)) ; => 123456nil
   "
   [f & seq-exprs]
@@ -153,7 +152,6 @@
 ; =fold
 (defn fold
   "(fold (fn [item result] exprs*) initial-value sequence)
-
    ex. (fold cons () '(1 2 3)) ; => (3 2 1)
   "
   [f val seq]
@@ -216,6 +214,10 @@
      )
    )
   ([n s] (nd n s "0"))
+  )
+
+(defn delete-html-tag [s]
+  (su2/replace s #"<.+?>" "")
   )
 
 ;; }}}

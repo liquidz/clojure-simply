@@ -216,9 +216,13 @@
   ([n s] (nd n s "0"))
   )
 
+; =delete-html-tag
 (defn delete-html-tag [s]
   (su2/replace s #"<.+?>" "")
   )
+
+; =start-with?
+(defn starts-with? [s s2] (.startsWith s s2))
 
 ;; }}}
 
@@ -248,4 +252,7 @@
 ;; =REGEXP ------------------------------- {{{
 ; =match?
 (defn match? [re & s] (every? #(not (nil? (re-find re %))) s))
+
+; =string->regexp
+(defn string->regexp [& s] (java.util.regex.Pattern/compile (apply str s)))
 ;; }}}

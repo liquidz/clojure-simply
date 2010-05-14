@@ -182,6 +182,7 @@
 ;; }}}
 
 ;; =INTEGER ------------------------------- {{{
+; =i
 (defn i [x] (java.lang.Integer/parseInt (str (if (keyword? x) (keyword->symbol x) x))))
 ;; }}}
 

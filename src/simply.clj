@@ -181,6 +181,10 @@
   )
 ;; }}}
 
+;; =INTEGER ------------------------------- {{{
+(defn i [x] (java.lang.Integer/parseInt (str (if (keyword? x) (keyword->symbol x) x))))
+;; }}}
+
 ;; =STRING ------------------------------- {{{
 ; =str-convert-encoding
 (defn str-convert-encoding [encoding & strs]

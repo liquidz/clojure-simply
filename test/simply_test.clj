@@ -132,6 +132,13 @@
   (is (not (key-value-seq? '(:a 1 2 3 :c 4))))
   )
 
+(deftest test-i
+  (is (= 10 (i "10")))
+  (is (= 10 (i '10)))
+  (is (= 10 (i :10)))
+  (is (= 11 (+ 1 (i '10))))
+  )
+
 (deftest test-join
   (is (= "abc" (empty-join '("a" "b" "c"))))
   (is (= "a\nb\nc") (newline-join '("a" "b" "c")))

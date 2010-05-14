@@ -19,3 +19,8 @@
     (is (calendar-format "/" :year :month :day))
     )
   )
+
+(deftest test-today
+  (println (today))
+  (println (today "-"))
+  )

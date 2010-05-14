@@ -31,3 +31,9 @@
     )
   )
 
+; =today
+(defn today
+  ([] (today "/"))
+  ([sep] (calendar-format :year sep :month sep :day))
+  )
+

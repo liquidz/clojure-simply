@@ -1,7 +1,10 @@
 (ns simply
-  (:require [clojure.contrib.seq-utils :as squ])
-  (:require [clojure.contrib.str-utils2 :as su2])
-  (:require [clojure.contrib.def :as cd])
+  (:import [java.net URLEncoder])
+  (:require
+     [clojure.contrib.seq-utils :as squ]
+     [clojure.contrib.str-utils2 :as su2]
+     [clojure.contrib.def :as cd]
+     )
   )
 
 (declare
@@ -86,7 +89,6 @@
 (defmacro defnk- [name & decls]
   (list* `defnk (with-meta name (assoc (meta name) :private true)) decls)
   )
-
 ;; }}}
 
 ;; =OUTPUT ------------------------------- {{{
@@ -241,6 +243,11 @@
 
 ; =start-with?
 (defn starts-with? [s s2] (.startsWith s s2))
+
+; =url-encode
+(defnk url-encode [s :encode "UTF-8"]
+  (URLEncoder/encode s encode)
+  )
 
 ;; }}}
 

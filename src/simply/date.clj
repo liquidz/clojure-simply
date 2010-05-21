@@ -37,3 +37,10 @@
   ([sep] (calendar-format :year sep :month sep :day))
   )
 
+; =now
+(defn now
+  ([] (now "/" ":"))
+  ([sep] (now sep ":"))
+  ([ds ts] (calendar-format :year ds :month ds :day " " :hour ts :minute ts :second))
+  )
+

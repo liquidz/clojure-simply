@@ -24,3 +24,9 @@
   (println (today))
   (println (today "-"))
   )
+
+(deftest test-now
+  (println (now))
+  (println (now "-"))
+  (println (now "-" ","))
+  )

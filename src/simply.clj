@@ -281,3 +281,15 @@
 ; =string->regexp
 (defn string->regexp [& s] (java.util.regex.Pattern/compile (apply str s)))
 ;; }}}
+
+;; =EXCEPTION ------------------------------- {{{
+(defmacro try-with [success fail & sex]
+  `(try (do ~@sex ~success) (catch Exception _# ~fail))
+  )
+
+(defmacro try-with-boolean [& sex]
+  `(try-with true false ~@sex)
+  )
+;; }}}
+
+

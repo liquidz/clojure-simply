@@ -220,4 +220,11 @@
   (is (not (match? #"^h" "neko" "world")))
   )
 
+(deftest test-try-with
+  (is (= 1 (try-with 1 2 (+ 1 2))))
+  (is (= 2 (try-with 1 2 (/ 1 0))))
+  (is (try-with-boolean (+ 1 2 3)))
+  (is (not (try-with-boolean (/ 1 0))))
+  )
+
 

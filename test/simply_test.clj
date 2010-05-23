@@ -87,7 +87,20 @@
     (is (= "ok" (f 3)))
     (is (not (f 4)))
     )
+  )
 
+(deftest test-and-nil?
+  (is (and-nil? nil))
+  (is (not (and-nil? 1)))
+  (is (and-nil? nil nil nil))
+  (is (not (and-nil? nil 1 nil)))
+  )
+
+(deftest test-or-nil?
+  (is (or-nil? nil))
+  (is (not (or-nil? 1)))
+  (is (or-nil? nil 1 2 3 nil))
+  (is (not (or-nil? 1 2 3 4)))
   )
 
 (deftest test-keyword->symbol

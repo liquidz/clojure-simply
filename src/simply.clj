@@ -128,6 +128,28 @@
     )
   )
 
+(defn and-nil? [& args]
+  (loop [ls args]
+    (if (empty? ls) true
+      (if (nil? (first ls))
+        (recur (rest ls))
+        false
+        )
+      )
+    )
+  )
+
+(defn or-nil? [& args]
+  (loop [ls args]
+    (if (empty? ls) false
+      (if (nil? (first ls))
+        true
+        (recur (rest ls))
+        )
+      )
+    )
+  )
+
 ;; }}}
 
 ;; =SYMBOL ------------------------------- {{{

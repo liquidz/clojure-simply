@@ -157,6 +157,26 @@
   (is (not (key-value-seq? '(:a 1 2 3 :c 4))))
   )
 
+(deftest test-group
+  (let [res (group '(a b a b a))]
+    (is (= 3 (count (:a res))))
+    (is (= 2 (count (:b res))))
+    )
+
+  (let [sample '((a 1) (b 1) (a 2) (c 2) (b 3))
+        fres (group first sample)
+        sres (group second sample)
+        ]
+    (is (= 2 (count (:a fres))))
+    (is (= 2 (count (:b fres))))
+    (is (= 1 (count (:c fres))))
+
+    (is (= 2 (count (:1 sres))))
+    (is (= 2 (count (:2 sres))))
+    (is (= 1 (count (:3 sres))))
+    )
+  )
+
 (deftest test-i
   (is (= 10 (i "10")))
   (is (= 10 (i '10)))
@@ -195,6 +215,17 @@
   (is (= "hello" (delete-html-tag "<p><a>hello</a></p>")))
   (is (= "hello" (delete-html-tag "<p><a href='index.html'>hello</a></p>")))
   (is (= "hello" (delete-html-tag "<p>h</p><p>e</p><p>l</p><p>l</p><p>o</p>")))
+  )
+
+(deftest test-str-compare
+  (is (str-compare zero? "a" "a"))
+  (is (not (str-compare zero? "a" "b")))
+  (is (str< "a" "b"))
+  (is (not (str< "a" "a")))
+  (is (not (str< "b" "a")))
+  (is (str> "b" "a"))
+  (is (not (str> "b" "b")))
+  (is (not (str> "a" "b")))
   )
 
 (deftest test-struct

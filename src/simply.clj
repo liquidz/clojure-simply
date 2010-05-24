@@ -10,7 +10,7 @@
 (declare
   keyword->symbol ++ -- caar cadr cddr foreach fold r-fold 
   key-value-seq? str-convert-encode to-utf8 to-euc to-sjis
-  empty-join newline-join make-str nd
+  empty-join newline-join make-str nd str-compare str> str<
   ref? ref-struct update-struct match?
   )
 
@@ -216,6 +216,21 @@
     (every? keyword? (map first (partition 2 seq)))
     )
   )
+
+; =group
+(defn group
+  ([col] (group (fn [x] x) col))
+  ([get-key-f col]
+   (fold
+     (fn [x res]
+       (let [tmp (get-key-f x)
+             key (keyword (if (number? tmp) (str tmp) tmp))]
+         (assoc res key (if (nil? (key res)) (list x) (cons x (key res))))
+         )
+       ) {} col)
+   )
+  )
+
 ;; }}}
 
 ;; =INTEGER ------------------------------- {{{
@@ -270,6 +285,11 @@
 (defnk url-encode [s :encode "UTF-8"]
   (URLEncoder/encode s encode)
   )
+
+; =str-compare
+(defn str-compare [f s1 s2] (f (.compareTo s1 s2)))
+(def str> (partial str-compare pos?))
+(def str< (partial str-compare neg?))
 
 ;; }}}
 

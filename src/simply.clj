@@ -180,7 +180,7 @@
   ex. (foreach println '(1 2 3) '(4 5 6)) ; => 123456nil
   "
   [f & seq-exprs]
-  {:pre [(every? seq? seq-exprs)]}
+  {:pre [(every? #(or (seq? %) (vector? %) (map? %)) seq-exprs)]}
   (doseq [seq seq-exprs]
     (doseq [x seq] (f x))
     )

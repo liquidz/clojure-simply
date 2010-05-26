@@ -132,6 +132,8 @@
 (deftest test-foreach
   (is (nil? (foreach inc '(1 2 3))))
   (is (nil? (foreach inc '(1 2) '(3 4))))
+  (is (nil? (foreach inc [1 2 3])))
+  (is (nil? (foreach (fn [[k v]] v) {:a 1 :b 2})))
   (is (thrown? java.lang.AssertionError (foreach inc "hello")))
   (is (thrown? java.lang.AssertionError (foreach inc '(1 2) "hello")))
   (is (thrown? java.lang.AssertionError (foreach inc '(1 2) '(3 4) '5)))

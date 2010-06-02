@@ -191,9 +191,9 @@
   "(fold (fn [item result] exprs*) initial-value sequence)
    ex. (fold cons () '(1 2 3)) ; => (3 2 1)
   "
-  [f val seq]
-  {:pre [(seq? seq)]}
-  (loop [res val, ls seq]
+  [f val col]
+  {:pre [(or (seq? col) (vector? col) (map? col))]}
+  (loop [res val, ls col]
     (if (empty? ls)
       res
       (recur (f (first ls) res) (rest ls))

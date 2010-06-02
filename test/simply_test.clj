@@ -146,6 +146,9 @@
   (is (= '(1 2 3) (fold cons '() '(3 2 1))))
   (is (thrown? java.lang.AssertionError (fold #(cons %1 %2) '() "neko")))
 
+  (is (= 6 (fold + 0 [1 2 3])))
+  (is (= 3 (fold (fn [[x y] res] (+ y res)) 0 {:a 1 :b 2})))
+
   (is (= 6 (r-fold + 0 '(1 2 3))))
   (is (= '(1 2 3) (r-fold cons '() '(1 2 3))))
   (is (not (= '(1 2 3) (r-fold cons '() '(3 2 1)))))

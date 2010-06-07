@@ -21,12 +21,24 @@
   )
 
 (deftest test-today
-  (println (today))
-  (println (today "-"))
+  ;(println (today))
+  ;(println (today "-"))
+  (is (today))
+  (is (today "-"))
   )
 
 (deftest test-now
-  (println (now))
-  (println (now "-"))
-  (println (now "-" ","))
+  ;(println (now))
+  ;(println (now "-"))
+  ;(println (now "-" ","))
+
+  (is (now))
+  (is (now "-"))
+  (is (now "-" ","))
+
+  )
+
+(deftest test-set-default-time-zone
+  (is (not (set-default-timezone)))
+  (is (not (set-default-timezone "Asia/Tokyo")))
   )

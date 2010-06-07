@@ -1,6 +1,6 @@
 (ns simply.date
   (:use simply)
-  (:import [java.util Calendar GregorianCalendar])
+  (:import [java.util TimeZone Calendar GregorianCalendar])
   )
 
 (def *key-calendar-field*
@@ -10,6 +10,14 @@
    :hour Calendar/HOUR_OF_DAY
    :minute Calendar/MINUTE
    :second Calendar/SECOND}
+  )
+
+; =set-default-timezone
+(defn set-default-timezone
+  ([timezone]
+   (TimeZone/setDefault (TimeZone/getTimeZone timezone))
+   )
+  ([] (set-default-timezone "Asia/Tokyo"))
   )
 
 ; =calendar-format

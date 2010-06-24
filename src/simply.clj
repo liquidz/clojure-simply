@@ -139,17 +139,9 @@
     )
   )
 
-(defn or-nil? [& args]
-  (loop [ls args]
-    (if (empty? ls) false
-      (if (nil? (first ls))
-        true
-        (recur (rest ls))
-        )
-      )
-    )
-  )
-
+(defn or-nil?
+  "return true if some args are nil"
+  [& args] (if (nil? (some nil? args)) false true))
 ;; }}}
 
 ;; =SYMBOL ------------------------------- {{{
@@ -278,7 +270,12 @@
   (su2/replace s #"<.+?>" "")
   )
 
-; =start-with?
+; =escape
+(defn escape [s]
+  (if (and (string? s) (! su2/blank? s)) (-> s delete-html-tag (su2/replace #"[\"'<>]" "")) "")
+  )
+
+; =starts-with?
 (defn starts-with? [s s2] (.startsWith s s2))
 
 ; =url-encode

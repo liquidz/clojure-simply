@@ -217,6 +217,7 @@
   )
 
 (deftest test-delete-html-tag
+  (is (= "" (delete-html-tag "<></>")))
   (is (= "hello" (delete-html-tag "<p>hello</p>")))
   (is (= "hello" (delete-html-tag "<p><a>hello</a></p>")))
   (is (= "hello" (delete-html-tag "<p><a href='index.html'>hello</a></p>")))
@@ -232,6 +233,15 @@
   (is (str> "b" "a"))
   (is (not (str> "b" "b")))
   (is (not (str> "a" "b")))
+  )
+
+(deftest test-escape
+  (is (= "" (escape "")))
+  (is (= "test" (escape "<s>test</s>")))
+  (is (= "test" (escape "t>e\"s't<")))
+  (is (= "test" (escape ">>>>>>>>>>>>te<><><><>st<<<<<<<<<<<<<")))
+  (is (= "alert(test);" (escape "\"><script>alert('test');</script>")))
+  (is (= "" (escape (list 1 2 3))))
   )
 
 (deftest test-struct

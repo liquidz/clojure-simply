@@ -1,7 +1,7 @@
 (ns simply
   (:import [java.net URLEncoder])
   (:require
-     [clojure.contrib.seq-utils :as squ]
+     [clojure.contrib.seq-utils :as se]
      [clojure.contrib.str-utils2 :as su2]
      [clojure.contrib.def :as cd]
      )
@@ -223,11 +223,31 @@
    )
   )
 
+; =delete-duplicates
+(defn delete-duplicates
+  ([f col]
+   (loop [ls col res ()]
+     (if (empty? ls)
+       (reverse res)
+       (let [val (first ls)]
+         (recur (rest ls)
+                (if (nil? (se/find-first #(= (f %) (f val)) res))
+                  (cons val res) res))
+         )
+       )
+     )
+   )
+  ([col] (delete-duplicate (fn [x] x) col))
+  )
+
+
+
 ;; }}}
 
 ;; =INTEGER ------------------------------- {{{
 ; =i
 (defn i [x] (java.lang.Integer/parseInt (str (if (keyword? x) (keyword->symbol x) x))))
+(def to-int i)
 ;; }}}
 
 ;; =STRING ------------------------------- {{{

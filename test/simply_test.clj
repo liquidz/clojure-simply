@@ -183,6 +183,23 @@
     )
   )
 
+(deftest test-delete-duplicates
+  (is (= 0 (count (delete-duplicates ()))))
+  (is (= 0 (count (delete-duplicates []))))
+  (is (= 4 (count (delete-duplicates [1 2 3 2 1 3 4]))))
+  (is (= 4 (count (delete-duplicates '(a b a c b d)))))
+
+  (let [sample [{:a 1 :b 2} {:a 2 :b 3} {:a 1 :b 3} {:a 3 :b 4} {:a 2 :b 4} {:a 4 :b 5} {:a 4 :b 5}]
+        a-ls (delete-duplicates :a sample)
+        b-ls (delete-duplicates :b sample)
+        ]
+    (is (= 4 (count a-ls)))
+    (is (= 4 (count b-ls)))
+    (is (= 10 (fold #(+ (:a %1) %2) 0 a-ls)))
+    (is (= 14 (fold #(+ (:b %1) %2) 0 b-ls)))
+    )
+  )
+
 (deftest test-i
   (is (= 10 (i "10")))
   (is (= 10 (i '10)))

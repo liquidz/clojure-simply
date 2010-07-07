@@ -130,6 +130,7 @@
   )
 
 (deftest test-foreach
+  (is (nil? (foreach inc nil)))
   (is (nil? (foreach inc '(1 2 3))))
   (is (nil? (foreach inc '(1 2) '(3 4))))
   (is (nil? (foreach inc [1 2 3])))

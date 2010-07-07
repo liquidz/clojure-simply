@@ -172,7 +172,7 @@
   ex. (foreach println '(1 2 3) '(4 5 6)) ; => 123456nil
   "
   [f & seq-exprs]
-  {:pre [(every? #(or (seq? %) (vector? %) (map? %)) seq-exprs)]}
+  {:pre [(every? #(or (nil? %) (seq? %) (vector? %) (map? %)) seq-exprs)]}
   (doseq [seq seq-exprs]
     (doseq [x seq] (f x))
     )
@@ -237,7 +237,7 @@
        )
      )
    )
-  ([col] (delete-duplicate (fn [x] x) col))
+  ([col] (delete-duplicates (fn [x] x) col))
   )
 
 

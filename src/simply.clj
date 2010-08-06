@@ -237,7 +237,8 @@
        )
      )
    )
-  ([col] (delete-duplicates (fn [x] x) col))
+  ;([col] (delete-duplicates (fn [x] x) col))
+  ([col] (delete-duplicates identity col))
   )
 
 

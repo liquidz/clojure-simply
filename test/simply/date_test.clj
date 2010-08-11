@@ -1,5 +1,4 @@
 (ns simply.date-test
-  (:use [simply] :reload-all)
   (:use [simply.date] :reload-all)
   (:use [clojure.test]))
 

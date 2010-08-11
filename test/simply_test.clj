@@ -23,11 +23,23 @@
   )
 
 (deftest test-defnk
-  (let [f (fnk [a :b 1 :c 2] (+ a (* b 2) (* c 3)))]
+  (let [f (fnk [a :b 1 :c 2] (+ a (* b 2) (* c 3)))
+        f2 (fnk [a :b 1 :c 2 & more] (- (+ a (* b 2) (* c 3)) (apply + more)))
+        ]
     (is (= 9 (f 1)))
     (is (= 11 (f 1 :b 2)))
     (is (= 12 (f 1 :c 3)))
     (is (= 14 (f 1 :c 3 :b 2)))
+
+    (is (= 9 (f2 1)))
+    (is (= 11 (f2 1 :b 2)))
+    (is (= 12 (f2 1 :c 3)))
+    (is (= 14 (f2 1 :c 3 :b 2)))
+
+    (is (= 8 (f2 1 :b 2 3)))
+    (is (= 4 (f2 1 :b 2 3 4)))
+    (is (= 0 (f2 1 :c 1 :b 1 6)))
+    (is (= 0 (f2 0 1 2 3 2)))
     )
   )
 
@@ -37,8 +49,58 @@
   )
 
 (deftest test-!=
-  (is (!= true false))
-  (is (not (!= true true)))
+  (is (! false))
+  (is (not (! true)))
+  (is (! = true false))
+  (is (not (! = true true)))
+  (is (! = true false true))
+  (is (! = 1 2 3))
+  )
+
+(deftest test-case
+  (is (case 1
+        1 true
+        :else false
+        ))
+  (is (not (case 2
+             1 true
+             :else false
+             )))
+  (is (case :k
+        :k (do false true)
+        :else false
+        ))
+  (is (case "ok"
+        "ng" false
+        "ok" true
+        :else false
+        ))
+  (let [f (fn [x]
+            (case x
+              [1 2] true
+              3 "ok"
+              :else false
+              )
+            )]
+    (is (f 1))
+    (is (f 2))
+    (is (= "ok" (f 3)))
+    (is (not (f 4)))
+    )
+  )
+
+(deftest test-and-nil?
+  (is (and-nil? nil))
+  (is (not (and-nil? 1)))
+  (is (and-nil? nil nil nil))
+  (is (not (and-nil? nil 1 nil)))
+  )
+
+(deftest test-or-nil?
+  (is (or-nil? nil))
+  (is (not (or-nil? 1)))
+  (is (or-nil? nil 1 2 3 nil))
+  (is (not (or-nil? 1 2 3 4)))
   )
 
 (deftest test-keyword->symbol
@@ -52,9 +114,28 @@
   (is (= 1 (-- 2)))
   )
 
+(deftest test-caar-cadr-cddr
+  (is (= 1 (caar '((1) (2)))))
+  (is (nil? (caar ())))
+  (is (thrown? java.lang.IllegalArgumentException (caar '(1))))
+
+  (is (= 2 (cadr '(1 2 3))))
+  (is (nil? (cadr ())))
+  (is (nil? (cadr '(1))))
+
+  (is (= '(3) (cddr '(1 2 3))))
+  (is (empty? (cddr ())))
+  (is (empty? (cddr '(1))))
+  (is (empty? (cddr '(1 2))))
+  )
+
 (deftest test-foreach
+  (is (nil? (foreach inc nil)))
   (is (nil? (foreach inc '(1 2 3))))
   (is (nil? (foreach inc '(1 2) '(3 4))))
+  (is (nil? (foreach inc [1 2 3])))
+  (is (nil? (foreach (fn [[k v]] v) {:a 1 :b 2})))
+  (is (nil? (foreach (fn [[k v]] v) ())))
   (is (thrown? java.lang.AssertionError (foreach inc "hello")))
   (is (thrown? java.lang.AssertionError (foreach inc '(1 2) "hello")))
   (is (thrown? java.lang.AssertionError (foreach inc '(1 2) '(3 4) '5)))
@@ -65,6 +146,9 @@
   (is (not (= '(1 2 3) (fold cons '() '(1 2 3)))))
   (is (= '(1 2 3) (fold cons '() '(3 2 1))))
   (is (thrown? java.lang.AssertionError (fold #(cons %1 %2) '() "neko")))
+
+  (is (= 6 (fold + 0 [1 2 3])))
+  (is (= 3 (fold (fn [[x y] res] (+ y res)) 0 {:a 1 :b 2})))
 
   (is (= 6 (r-fold + 0 '(1 2 3))))
   (is (= '(1 2 3) (r-fold cons '() '(1 2 3))))
@@ -78,6 +162,104 @@
   (is (key-value-seq? '(:a 1 :b 2 :c 3)))
   (is (not (key-value-seq? '(:a 1 2 :c 3))))
   (is (not (key-value-seq? '(:a 1 2 3 :c 4))))
+  )
+
+(deftest test-group
+  (let [res (group '(a b a b a))]
+    (is (= 3 (count (:a res))))
+    (is (= 2 (count (:b res))))
+    )
+
+  (let [sample '((a 1) (b 1) (a 2) (c 2) (b 3))
+        fres (group first sample)
+        sres (group second sample)
+        ]
+    (is (= 2 (count (:a fres))))
+    (is (= 2 (count (:b fres))))
+    (is (= 1 (count (:c fres))))
+
+    (is (= 2 (count (:1 sres))))
+    (is (= 2 (count (:2 sres))))
+    (is (= 1 (count (:3 sres))))
+    )
+  )
+
+(deftest test-delete-duplicates
+  (is (= 0 (count (delete-duplicates ()))))
+  (is (= 0 (count (delete-duplicates []))))
+  (is (= 4 (count (delete-duplicates [1 2 3 2 1 3 4]))))
+  (is (= 4 (count (delete-duplicates '(a b a c b d)))))
+
+  (let [sample [{:a 1 :b 2} {:a 2 :b 3} {:a 1 :b 3} {:a 3 :b 4} {:a 2 :b 4} {:a 4 :b 5} {:a 4 :b 5}]
+        a-ls (delete-duplicates :a sample)
+        b-ls (delete-duplicates :b sample)
+        ]
+    (is (= 4 (count a-ls)))
+    (is (= 4 (count b-ls)))
+    (is (= 10 (fold #(+ (:a %1) %2) 0 a-ls)))
+    (is (= 14 (fold #(+ (:b %1) %2) 0 b-ls)))
+    )
+  )
+
+(deftest test-i
+  (is (= 10 (i "10")))
+  (is (= 10 (i '10)))
+  (is (= 10 (i :10)))
+  (is (= 11 (+ 1 (i '10))))
+  )
+
+(deftest test-join
+  (is (= "abc" (empty-join '("a" "b" "c"))))
+  (is (= "a\nb\nc") (newline-join '("a" "b" "c")))
+  )
+
+(deftest test-mk-str
+  (is (= "aa" (make-str 2 "a")))
+  (is (= "aa" (make-str 2 \a)))
+  (is (= "00" (make-str 2 0)))
+  (is (= "a" (make-str 1 'a)))
+  (is (thrown? java.lang.AssertionError (make-str 0 "a")))
+  (is (thrown? java.lang.AssertionError (make-str -1 "a")))
+  )
+
+(deftest test-nd
+  (is (= "ca" (nd 2 "a" "c")))
+  (is (= "a" (nd 1 "a" "c")))
+  (is (= "aa" (nd 2 "aa" "c")))
+  (is (= "aaa" (nd 2 "aaa" "c")))
+  (is (thrown? java.lang.AssertionError (nd 0 "a" "c")))
+  (is (thrown? java.lang.AssertionError (nd -1 "a" "c")))
+  (is (= "01" (nd 2 1)))
+  (is (= "10" (nd 2 10)))
+  (is (= "100" (nd 2 100)))
+  )
+
+(deftest test-delete-html-tag
+  (is (= "" (delete-html-tag "<></>")))
+  (is (= "hello" (delete-html-tag "<p>hello</p>")))
+  (is (= "hello" (delete-html-tag "<p><a>hello</a></p>")))
+  (is (= "hello" (delete-html-tag "<p><a href='index.html'>hello</a></p>")))
+  (is (= "hello" (delete-html-tag "<p>h</p><p>e</p><p>l</p><p>l</p><p>o</p>")))
+  )
+
+(deftest test-str-compare
+  (is (str-compare zero? "a" "a"))
+  (is (not (str-compare zero? "a" "b")))
+  (is (str< "a" "b"))
+  (is (not (str< "a" "a")))
+  (is (not (str< "b" "a")))
+  (is (str> "b" "a"))
+  (is (not (str> "b" "b")))
+  (is (not (str> "a" "b")))
+  )
+
+(deftest test-escape
+  (is (= "" (escape "")))
+  (is (= "test" (escape "<s>test</s>")))
+  (is (= "test" (escape "t>e\"s't<")))
+  (is (= "test" (escape ">>>>>>>>>>>>te<><><><>st<<<<<<<<<<<<<")))
+  (is (= "alert(test);" (escape "\"><script>alert('test');</script>")))
+  (is (= "" (escape (list 1 2 3))))
   )
 
 (deftest test-struct
@@ -104,6 +286,23 @@
     (is (thrown? java.lang.AssertionError (update-struct y :a 1 2)))
     (is (thrown? java.lang.AssertionError (update-struct y :a 1 2 3)))
     )
+  )
+
+(deftest test-match?
+  (is (match? #"^h"))
+  (is (match? #"^h" "hello"))
+  (is (not (match? #"^e" "hello")))
+  (is (match? #"^h" "hello" "heiho"))
+  (is (not (match? #"^h" "hello" "world")))
+  (is (not (match? #"^h" "world" "hello")))
+  (is (not (match? #"^h" "neko" "world")))
+  )
+
+(deftest test-try-with
+  (is (= 1 (try-with 1 2 (+ 1 2))))
+  (is (= 2 (try-with 1 2 (/ 1 0))))
+  (is (try-with-boolean (+ 1 2 3)))
+  (is (not (try-with-boolean (/ 1 0))))
   )
 
 

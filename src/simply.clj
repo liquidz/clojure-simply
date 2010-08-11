@@ -1,13 +1,17 @@
 (ns simply
-  (:require [clojure.contrib.seq-utils :as squ])
-  (:require [clojure.contrib.str-utils2 :as su2])
-  (:require [clojure.contrib.def :as cd])
+  (:import [java.net URLEncoder])
+  (:require
+     [clojure.contrib.seq-utils :as se]
+     [clojure.contrib.str-utils2 :as su2]
+     [clojure.contrib.def :as cd]
+     )
   )
 
 (declare
-  != keyword->symbol ++ -- foreach fold r-fold 
-  str-convert-encode to-utf8 to-euc to-sjis
-  key-value-seq?
+  keyword->symbol ++ -- caar cadr cddr foreach fold r-fold 
+  key-value-seq? str-convert-encode to-utf8 to-euc to-sjis
+  empty-join newline-join make-str nd str-compare str> str<
+  ref? ref-struct update-struct match?
   )
 
 ;; DEF {{{
@@ -51,16 +55,29 @@
   )
 
 ; =defnk
+(defn split-kv-extra [col]
+  (loop [ls col, m {}]
+    (cond
+      (empty? ls) [m ()]
+      (-> ls first keyword?) (recur (cddr ls) (assoc m (first ls) (second ls)))
+      :else [m ls]
+      )
+    )
+  )
 (defmacro fnk [args & body]
   (let [[fixed-args k-args] (split-with symbol? args)
-        s-args (map #(if (keyword? %) (keyword->symbol %) %) k-args)
+        [k-args2 extra] (split-with #(not (= % '&)) k-args)
+        s-args (map #(if (keyword? %) (keyword->symbol %) %) k-args2)
+        extra-name (if (empty? extra) '_extra_ (-> extra second symbol))
         keywords (filter symbol? s-args)
         default-map (apply hash-map s-args)
         [condition-map & rest-body] (if (and (rest body) (map? (first body))) body (cons () body))
         ]
     `(fn [~@fixed-args & more#]
        ~condition-map
-       (let [{:keys [~@keywords] :or ~default-map} (apply hash-map more#)]
+       (let [[kvs# ~extra-name] (split-kv-extra more#)
+             {:keys [~@keywords] :or ~default-map} kvs#
+             ]
          ~@rest-body
          )
        )
@@ -104,8 +121,8 @@
 ; =p
 (defmacro p
   ([v] `(do (println ~v) ~v))
-  ([l & args]
-   `(let [x# (~l ~@args)]
+  ([l & more]
+   `(let [x# (~l ~@more)]
       (println x#)
       x#
       )
@@ -113,13 +130,44 @@
   )
 ;; }}}
 
-;; =CONDITIONS ------------------------------- {{{
-; =!=
-(defn !=
-  ([x] true)
-  ([x y] (not (= x y)))
-  ([x y & more] (and (= x y) (apply = more)))
+;; =CONDITION ------------------------------- {{{
+; =!
+(defmacro !
+  ([v] `(not ~v))
+  ([v & more] `(not (~v ~@more)))
   )
+
+; =case
+(defmacro case [base-val & patterns]
+  (cons
+    'cond
+    (fold (fn [[val & more] res]
+            (concat
+              res
+              (list (cond
+                      (vector? val) `(or ~@(map #(list '= base-val %) val))
+                      (= val :else) val
+                      :else `(= ~base-val ~val))
+                    (first more))))
+          ()
+          (partition 2 patterns))
+    )
+  )
+
+(defn and-nil? [& args]
+  (loop [ls args]
+    (if (empty? ls) true
+      (if (nil? (first ls))
+        (recur (rest ls))
+        false
+        )
+      )
+    )
+  )
+
+(defn or-nil?
+  "return true if some args are nil"
+  [& args] (if (nil? (some nil? args)) false true))
 ;; }}}
 
 ;; =SYMBOL ------------------------------- {{{
@@ -137,15 +185,20 @@
 (def -- dec)
 ;; }}}
 
-;; =SEQUENCE ------------------------------- {{{
+;; =COLLECTION ------------------------------- {{{
+; =caar
+(defn caar [col] (-> col first first))
+; =cadr
+(defn cadr [col] (-> col rest first))
+; =cddr
+(defn cddr [col] (-> col rest rest))
 ; =foreach
 (defn foreach
   "(foreach function sequences*)
-
   ex. (foreach println '(1 2 3) '(4 5 6)) ; => 123456nil
   "
   [f & seq-exprs]
-  {:pre [(every? seq? seq-exprs)]}
+  {:pre [(every? #(or (nil? %) (seq? %) (vector? %) (map? %)) seq-exprs)]}
   (doseq [seq seq-exprs]
     (doseq [x seq] (f x))
     )
@@ -154,12 +207,11 @@
 ; =fold
 (defn fold
   "(fold (fn [item result] exprs*) initial-value sequence)
-
    ex. (fold cons () '(1 2 3)) ; => (3 2 1)
   "
-  [f val seq]
-  {:pre [(seq? seq)]}
-  (loop [res val, ls seq]
+  [f val col]
+  {:pre [(or (seq? col) (vector? col) (map? col))]}
+  (loop [res val, ls col]
     (if (empty? ls)
       res
       (recur (f (first ls) res) (rest ls))
@@ -182,6 +234,47 @@
     (every? keyword? (map first (partition 2 seq)))
     )
   )
+
+; =group
+(defn group
+  ([col] (group (fn [x] x) col))
+  ([get-key-f col]
+   (fold
+     (fn [x res]
+       (let [tmp (get-key-f x)
+             key (keyword (if (number? tmp) (str tmp) tmp))]
+         (assoc res key (if (nil? (key res)) (list x) (cons x (key res))))
+         )
+       ) {} col)
+   )
+  )
+
+; =delete-duplicates
+(defn delete-duplicates
+  ([f col]
+   (loop [ls col res ()]
+     (if (empty? ls)
+       (reverse res)
+       (let [val (first ls)]
+         (recur (rest ls)
+                (if (nil? (se/find-first #(= (f %) (f val)) res))
+                  (cons val res) res))
+         )
+       )
+     )
+   )
+  ;([col] (delete-duplicates (fn [x] x) col))
+  ([col] (delete-duplicates identity col))
+  )
+
+
+
+;; }}}
+
+;; =INTEGER ------------------------------- {{{
+; =i
+(defn i [x] (java.lang.Integer/parseInt (str (if (keyword? x) (keyword->symbol x) x))))
+(def to-int i)
 ;; }}}
 
 ;; =STRING ------------------------------- {{{
@@ -198,6 +291,50 @@
 (def to-euc (partial str-convert-encoding "EUC-JP"))
 ; =to-sjis
 (def to-sjis (partial str-convert-encoding "Shift_JIS"))
+; =empty-join
+(def empty-join (partial su2/join ""))
+; =newline-join
+(def newline-join (partial su2/join "\n"))
+
+; =make-str
+(defn make-str [n s]
+  {:pre [(pos? n)]}
+  (nth (iterate #(str s %) (str s)) (-- n))
+  )
+; =nd (n-digit)
+(defn nd
+  ([n s c]
+   {:pre [(pos? n) (or (string? c) (char? c))]}
+   (let [st (str s), len (count st), cs (str c)]
+     (str (if (< len n) (make-str (- n len) c) "") st)
+     )
+   )
+  ([n s] (nd n s "0"))
+  )
+
+; =delete-html-tag
+(defn delete-html-tag [s]
+  (su2/replace s #"<.+?>" "")
+  )
+
+; =escape
+(defn escape [s]
+  (if (and (string? s) (! su2/blank? s)) (-> s delete-html-tag (su2/replace #"[\"'<>]" "")) "")
+  )
+
+; =starts-with?
+(defn starts-with? [s s2] (.startsWith s s2))
+
+; =url-encode
+(defnk url-encode [s :encode "UTF-8"]
+  (URLEncoder/encode s encode)
+  )
+
+; =str-compare
+(defn str-compare [f s1 s2] (f (.compareTo s1 s2)))
+(def str> (partial str-compare pos?))
+(def str< (partial str-compare neg?))
+
 ;; }}}
 
 ;; =STRUCT ------------------------------- {{{
@@ -222,3 +359,23 @@
   ref
   )
 ;; }}}
+
+;; =REGEXP ------------------------------- {{{
+; =match?
+(defn match? [re & s] (every? #(not (nil? (re-find re %))) s))
+
+; =string->regexp
+(defn string->regexp [& s] (java.util.regex.Pattern/compile (apply str s)))
+;; }}}
+
+;; =EXCEPTION ------------------------------- {{{
+(defmacro try-with [success fail & sex]
+  `(try (do ~@sex ~success) (catch Exception _# ~fail))
+  )
+
+(defmacro try-with-boolean [& sex]
+  `(try-with true false ~@sex)
+  )
+;; }}}
+
+

@@ -13,33 +13,5 @@ write clojure code more simply
 	  (:use simply)
 	  )
 
-	; implicit-symbol
-	(with-implicit
-	  (+ 1 2)
-	  (= 3 %) ; % = (+ 1 2) = 3
-	  (if % "ok" "ng") ; => "ok"
-	  )
-
-	(defni implicit-fun [x]
-	  (+ 1 x)
-	  (= 3 %)
-	  )
-	(implicit-function 2) ; => true
-
-	; simply print
-	(p + 1 2 3) ; => (println (+ 1 2 3))
-
-	; !=
-	(!= true false) ; => true
-
-	; foreach
-	(foreach println '(1 2 3))
-
-	; fold
-	(fold #(%1 %2) () '(1 2 3)) ; reverse
-
-	; charconv
-	(to-utf8 "...")
-	(to-euc "...")
-	(to-sjis "...")
+	; see wiki
 

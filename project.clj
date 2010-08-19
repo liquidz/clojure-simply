@@ -1,5 +1,5 @@
 (defproject
-  org.clojars.liquidz/simply "0.1.9"
+  org.clojars.liquidz/simply "0.1.95"
   :description "write clojure code more simply"
   :dependencies [[org.clojure/clojure "1.1.0"]
                  [org.clojure/clojure-contrib "1.1.0"]

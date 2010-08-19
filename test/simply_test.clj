@@ -25,6 +25,8 @@
 (deftest test-defnk
   (let [f (fnk [a :b 1 :c 2] (+ a (* b 2) (* c 3)))
         f2 (fnk [a :b 1 :c 2 & more] (- (+ a (* b 2) (* c 3)) (apply + more)))
+        f3 (fnk [a b] (+ a b))
+        f4 (fnk [& c] (apply + c))
         ]
     (is (= 9 (f 1)))
     (is (= 11 (f 1 :b 2)))
@@ -40,6 +42,9 @@
     (is (= 4 (f2 1 :b 2 3 4)))
     (is (= 0 (f2 1 :c 1 :b 1 6)))
     (is (= 0 (f2 0 1 2 3 2)))
+
+    (is (= 3 (f3 1 2)))
+    (is (= 6 (f4 1 2 3)))
     )
   )
 

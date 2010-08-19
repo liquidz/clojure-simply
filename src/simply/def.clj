@@ -1,30 +1,26 @@
 (ns simply.def)
 
 ; =defnk
-(defn split-kv-extra [col]
-  (loop [ls col, m {}]
-    (cond
-      (empty? ls) [m ()]
-      (-> ls first keyword?) (recur (-> ls rest rest) (assoc m (first ls) (second ls)))
-      :else [m ls]
-      )
+(defn split-map-other [col]
+  (let [maps (reduce concat () (take-while #(-> % first keyword?) (partition 2 col)))
+        other (drop (count maps) col)]
+    [(apply hash-map maps) other]
     )
   )
 
 (defmacro fnk [args & body]
-  (let [[fixed-args k-args] (split-with symbol? args)
-        [k-args2 extra] (split-with #(not (= % '&)) k-args)
-        s-args (map #(if (keyword? %) (-> % name symbol) %) k-args2)
-        extra-name (if (empty? extra) '_extra_ (-> extra second symbol))
-        keywords (filter symbol? s-args)
+  (let [
+        [normal-args [_ extra]] (split-with #(not (= % '&)) args)
+        [fixed-args k-args] (split-with symbol? normal-args)
+        s-args (map #(if (keyword? %) (-> % name symbol) %) k-args)
         default-map (apply hash-map s-args)
-        [condition-map & rest-body] (if (and (rest body) (map? (first body))) body (cons () body))
+        extra-name (if (nil? extra) (gensym) extra)
+        [condition-map & rest-body] (if (and (rest body) (-> body first map?)) body (cons () body))
         ]
     `(fn [~@fixed-args & more#]
        ~condition-map
-       (let [[kvs# ~extra-name] (split-kv-extra more#)
-             {:keys [~@keywords] :or ~default-map} kvs#
-             ]
+       (let [[kvs# ~extra-name] (split-map-other more#)
+             {:keys [~@(filter symbol? s-args)] :or ~default-map} kvs#]
          ~@rest-body
          )
        )

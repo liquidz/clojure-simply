@@ -5,6 +5,8 @@
 (deftest test-defnk
   (let [f (fnk [a :b 1 :c 2] (+ a (* b 2) (* c 3)))
         f2 (fnk [a :b 1 :c 2 & more] (- (+ a (* b 2) (* c 3)) (apply + more)))
+        f3 (fnk [a b] (+ a b))
+        f4 (fnk [& c] (apply + c))
         ]
     (are [x y] (= x y)
       9   (f 1)
@@ -21,6 +23,11 @@
       4   (f2 1 :b 2 3 4)
       0   (f2 1 :c 1 :b 1 6)
       0   (f2 0 1 2 3 2)
+
+      3   (f3 1 2)
+
+      6   (f4 1 2 3)
+      10  (f4 1 2 3 4)
       )
     )
   )
@@ -53,22 +60,6 @@
   (is (thrown? java.lang.AssertionError (foreach inc "hello")))
   (is (thrown? java.lang.AssertionError (foreach inc '(1 2) "hello")))
   (is (thrown? java.lang.AssertionError (foreach inc '(1 2) '(3 4) '5)))
-  )
-
-(deftest test-fold
-  (are [x y] (= x y)
-    6         (fold + 0 '(1 2 3))
-    '(1 2 3)  (fold cons '() '(3 2 1))
-
-    6         (fold + 0 [1 2 3])
-    3         (fold (fn [[m n] res] (+ n res)) 0 {:a 1 :b 2})
-
-    6         (r-fold + 0 '(1 2 3))
-    '(1 2 3)  (r-fold cons '() '(1 2 3))
-    )
-
-  (is (thrown? java.lang.AssertionError (fold #(cons %1 %2) '() "neko")))
-  (is (thrown? java.lang.AssertionError (r-fold #(cons %1 %2) '() "neko")))
   )
 
 (deftest test-group
@@ -110,8 +101,8 @@
     (are [x y] (= x y)
       4  (count a-ls)
       4  (count b-ls)
-      10 (fold #(+ (:a %1) %2) 0 a-ls)
-      14 (fold #(+ (:b %1) %2) 0 b-ls)
+      10 (reduce #(+ (:a %2) %1) 0 a-ls)
+      14 (reduce #(+ (:b %2) %1) 0 b-ls)
       )
     )
   )
@@ -214,7 +205,7 @@
     )
   )
 
-(deftest test-try-with
+#_(deftest test-try-with
   (are [x y] (= x y)
     1     (try-with 1 2 (+ 1 2))
     2     (try-with 1 2 (/ 1 0))

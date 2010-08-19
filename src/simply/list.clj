@@ -16,30 +16,12 @@
     )
   )
 
-; =fold
-(defn fold [f val col]
-  {:pre [(or (seq? col) (vector? col) (map? col))]}
-  (loop [res val, ls col]
-    (if (empty? ls)
-      res
-      (recur (f (first ls) res) (rest ls))
-      )
-    )
-  )
-
-; =r-fold
-(defn r-fold [f val seq]
-  (let [res (fold f val seq)]
-    (if (seq? res) (reverse res) res)
-    )
-  )
-
 ; =group
 (defn group
   ([col] (group (fn [x] x) col))
   ([get-key-f col]
-   (fold
-     (fn [x res]
+   (reduce
+     (fn [res x]
        (let [tmp (get-key-f x)
              key (keyword (if (number? tmp) (str tmp) tmp))]
          (assoc res key (if (nil? (key res)) (list x) (cons x (key res))))

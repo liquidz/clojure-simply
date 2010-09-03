@@ -2,12 +2,6 @@
   (:require [clojure.contrib.seq :as se])
   )
 
-; =caar
-(defn caar [col] (-> col first first))
-; =cadr
-(defn cadr [col] (-> col rest first))
-; =cddr
-(defn cddr [col] (-> col rest rest))
 ; =foreach
 (defn foreach [f & seq-exprs]
   {:pre [(every? #(or (nil? %) (seq? %) (vector? %) (map? %)) seq-exprs)]}
@@ -16,19 +10,20 @@
     )
   )
 
-; =group
-(defn group
-  ([col] (group (fn [x] x) col))
-  ([get-key-f col]
-   (reduce
-     (fn [res x]
-       (let [tmp (get-key-f x)
-             key (keyword (if (number? tmp) (str tmp) tmp))]
-         (assoc res key (if (nil? (key res)) (list x) (cons x (key res))))
-         )
-       ) {} col)
-   )
-  )
+;(defn fold [f ini & coll]
+;  (when (-> coll first coll?)
+;    (let [body (fn [res ls]
+;                 (if (-> ls first empty?) res
+;                   (recur
+;                     (apply f (concat (map first ls) (list res)))
+;                     (map #(drop 1 %) ls)
+;                     )
+;                   )
+;                 )]
+;      (body ini coll)
+;      )
+;    )
+;  )
 
 ; =delete-duplicates
 (defn delete-duplicates

@@ -1,5 +1,5 @@
 (ns simply.date
-  (:use simply.string)
+  ;(:use simply.string)
   (:require [clojure.contrib.string :as st])
   (:import [java.util TimeZone Calendar GregorianCalendar])
   )
@@ -33,8 +33,8 @@
       ""
       (map #(let [r (if (keyword? %) (.get cal (% *key-calendar-field*)) %)]
               (case %
-                :month (nd 2 (inc r))
-                (:day :hour :minute :second) (nd 2 r)
+                :month (st/format "%02d" (inc r))
+                (:day :hour :minute :second) (st/format "%02d" r)
                 r
                 )
               ) more)

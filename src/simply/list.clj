@@ -2,29 +2,6 @@
   (:require [clojure.contrib.seq :as se])
   )
 
-; =foreach
-(defn foreach [f & seq-exprs]
-  {:pre [(every? #(or (nil? %) (seq? %) (vector? %) (map? %)) seq-exprs)]}
-  (doseq [seq seq-exprs]
-    (doseq [x seq] (f x))
-    )
-  )
-
-;(defn fold [f ini & coll]
-;  (when (-> coll first coll?)
-;    (let [body (fn [res ls]
-;                 (if (-> ls first empty?) res
-;                   (recur
-;                     (apply f (concat (map first ls) (list res)))
-;                     (map #(drop 1 %) ls)
-;                     )
-;                   )
-;                 )]
-;      (body ini coll)
-;      )
-;    )
-;  )
-
 ; =delete-duplicates
 (defn delete-duplicates
   ([f col]

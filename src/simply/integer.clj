@@ -1,4 +1,13 @@
 (ns simply.integer)
 
-(defn integer [x] (java.lang.Integer/parseInt (if (keyword? x) (name x) (str x))))
-(defn dividable? [n m] (-> n (mod m) zero?))
+(defprotocol ConvertInteger
+  (int [this])
+  )
+
+(extend String ConvertInteger
+  {:int (fn [this] (Integer/parseInt this))})
+(extend Keyword ConvertInteger
+  {:int (fn [this] (Integer/parseInt (name this)))})
+;(extend Double ConvertInteger
+;  {:int (fn [this] (clojure.core/int this))})
+

@@ -29,7 +29,12 @@
 (defmacro defnk [name & decls] `(def ~name (fnk ~@decls)))
 (defmacro defnk- [name & decls] (list* `defnk (with-meta name (assoc (meta name) :private true)) decls))
 
-(def foreach #(doseq [x %2] (%1 x)))
+(defn foreach [f & colls]
+  (if (> (count colls) 1)
+    (doseq [x (partition 2 (apply interleave colls))] (apply f x))
+    (doseq [x (first colls)] (f x))
+    )
+  )
 
 (defn fold [f ini & coll]
   (when (-> coll first empty? not)

@@ -24,7 +24,7 @@
 
 ; =escape
 (defn escape [s]
-  (if (and (string? s) (! st/blank? s))
+  (if (and (string? s) (not (st/blank? s)))
     (->> s delete-html-tag (st/replace-re #"[\"'<>]" ""))
     ""
     )

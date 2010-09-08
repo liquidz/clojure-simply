@@ -21,9 +21,6 @@
   (String (apply str args))
   (clojure.lang.IPersistentList (apply concat args))
   (clojure.lang.IPersistentVector (vec (apply concat args)))
-;  (clojure.lang.IPersistentMap 
-;    (apply assoc (first args) (fold () () ))
-;    )
-    ;([a b] (apply assoc (cons a (reduce concat () b)))))
+  (clojure.lang.IPersistentMap (apply assoc (cons (first args) (flatten (map #(reduce concat () %) (rest args))))))
   (clojure.lang.Fn (apply comp args))
   )

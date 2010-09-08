@@ -32,8 +32,8 @@
       ""
       (map #(let [r (if (keyword? %) (.get cal (% *key-calendar-field*)) %)]
               (case %
-                :month (st/format "%02d" (inc r))
-                (:day :hour :minute :second) (st/format "%02d" r)
+                :month (format "%02d" (inc r))
+                (:day :hour :minute :second) (format "%02d" r)
                 r
                 )
               ) more)

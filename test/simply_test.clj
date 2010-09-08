@@ -1,5 +1,5 @@
 (ns simply-test
-  (:use [simply core def integer list ref regexp string date] :reload-all)
+  (:use [simply core list regexp string date more] :reload-all)
   (:use [clojure.test]))
 
 (deftest test-defnk
@@ -32,11 +32,6 @@
     )
   )
 
-(deftest test-pp
-  (is (pp true))
-  (is (= 3 (pp + 1 2)))
-  )
-
 (deftest test-!=
   (are [x y] (= x y)
     true  (! false)
@@ -52,37 +47,10 @@
   (are [x] (nil? x)
     (foreach inc nil)
     (foreach inc '(1 2 3))
-    (foreach inc '(1 2) '(3 4))
+    (foreach + '(1 2) '(3 4))
     (foreach inc [1 2 3])
     (foreach (fn [[k v]] v) {:a 1 :b 2})
     (foreach (fn [[k v]] v) ())
-    )
-  (is (thrown? java.lang.AssertionError (foreach inc "hello")))
-  (is (thrown? java.lang.AssertionError (foreach inc '(1 2) "hello")))
-  (is (thrown? java.lang.AssertionError (foreach inc '(1 2) '(3 4) '5)))
-  )
-
-(deftest test-group
-  (let [res (group '(a b a b a))]
-    (are [x y] (= x (count y))
-      3 (:a res)
-      2 (:b res)
-      )
-    )
-
-  (let [sample '((a 1) (b 1) (a 2) (c 2) (b 3))
-        fres (group first sample)
-        sres (group second sample)
-        ]
-    (are [x y] (= x (count y))
-      2 (:a fres)
-      2 (:b fres)
-      1 (:c fres)
-
-      2 (:1 sres)
-      2 (:2 sres)
-      1 (:3 sres)
-      )
     )
   )
 
@@ -107,26 +75,12 @@
     )
   )
 
-(deftest test-integer
+#_(deftest test-integer
   (are [x y] (= x (integer y))
     10 "10"
     10 '10
     10 :10
     )
-  )
-
-(deftest test-nd
-  (are [x y] (= x (apply nd y))
-    "ca"  '(2 "a" "c")
-    "a"   '(1 "a" "c")
-    "aa"  '(2 "aa" "c")
-    "aaa" '(2 "aaa" "c")
-    "01"  '(2 1)
-    "10"  '(2 10)
-    "100" '(2 100)
-    )
-  (is (thrown? java.lang.AssertionError (nd 0 "a" "c")))
-  (is (thrown? java.lang.AssertionError (nd -1 "a" "c")))
   )
 
 (deftest test-delete-html-tag
@@ -163,36 +117,6 @@
     )
   )
 
-(deftest test-struct
-  (defstruct teststruct :a :b :c)
-  (let [m (struct teststruct 1 2 3)
-        n (ref-struct teststruct 10 20 30)
-        ]
-
-    (are [x y] (= x (ref? y))
-      true  (ref m)
-      true  n
-      false 123
-      false "hello"
-      )
-
-    (are [x y] (= x y)
-      true (map? @n)
-      10   (:a @n)
-      20   (:b @n)
-      30   (:c @n)
-      )
-
-    (update-struct n :a 1)
-    (is (= 1 (:a @n)))
-    (update-struct n :b 2 :c 3 :d 4)
-    (is (and (= 2 (:b @n)) (= 3 (:c @n)) (= 4 (:d @n))))
-    (is (thrown? java.lang.AssertionError (update-struct "hello" :a 1 2)))
-    (is (thrown? java.lang.AssertionError (update-struct n :a 1 2)))
-    (is (thrown? java.lang.AssertionError (update-struct n :a 1 2 3)))
-    )
-  )
-
 (deftest test-match?
   (are [x y] (= x (apply match? y))
     true  '(#"^h")
@@ -218,15 +142,18 @@
 (deftest test-calendar-format
   (let [c (java.util.Calendar/getInstance)]
     (.set c 2010 (dec 1) 2 3 4 5)
-    (is (= "20100102" (calendar-format c :year :month :day)))
-    (is (= "030405") (calendar-format c :hour :minute :second))
-    (is (= "2010a01b02"(calendar-format c :year "a" :month "b" :day)))
-    (is (= "2010a01b02c"(calendar-format c :year "a" :month "b" :day "c")))
+    (are [x y] (= x y)
+      "20100102" (calendar-format c :year :month :day)
+      "030405" (calendar-format c :hour :minute :second)
+      "2010a01b02" (calendar-format c :year "a" :month "b" :day)
+      "2010a01b02c"(calendar-format c :year "a" :month "b" :day "c")
+      )
 
     (.set c 2010 (dec 10) 12 13 14 15)
-    (is (= "20101012" (calendar-format c :year :month :day)))
-    (is (= "131415" (calendar-format c :hour :minute :second)))
-
+    (are [x y] (= x y)
+      "20101012" (calendar-format c :year :month :day)
+      "131415" (calendar-format c :hour :minute :second)
+      )
     (is (calendar-format :year :month :day))
     (is (calendar-format "/" :year :month :day))
     )
@@ -248,4 +175,14 @@
   (is (not (set-default-timezone "Asia/Tokyo")))
   )
 
+(deftest test-++
+  (are [x y] (= x y)
+    10 (++ 1 2 3 4)
+    "helloworld" (++ "hello" "world")
+    '(1 2 3 4) (++ '(1 2) '(3) '(4))
+    [1 2 3 4] (++ [1] [2 3] [4])
+    '("a" "b" "c") (->> (++ {'a 1} {'b 2 'c 3}) keys (map str) (sort str<))
+    4 ((++ inc inc inc) 1)
+    )
+  )
 

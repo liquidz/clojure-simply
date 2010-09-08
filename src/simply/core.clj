@@ -1,20 +1,33 @@
 (ns simply.core)
 
-(defmacro pp
-  ([v] `(do (println ~v) ~v))
-  ([l & more]
-   `(let [x# (~l ~@more)]
-      (println "pp)) " x#)
-      x#
-      )
-   )
-  )
-
 (defmacro !
   ([v] `(not ~v))
   ([v & more] `(not (~v ~@more)))
   )
 
+(defmacro fnk [params & body]
+  (let [key->sym (comp symbol name)
+        [fixed-named-args [_ extra]] (split-with #(not (= % '&)) params)
+        [fixed-args named-args] (split-with symbol? fixed-named-args)
+        name-syms (->> named-args (filter keyword?) (map key->sym))
+        named-map (apply hash-map (map #(if (keyword? %) (key->sym %) %) named-args))
+        extra-arg-name (if (nil? extra) (gensym) extra)
+        [condition-map & body*] (if (-> body first map?) body (cons {} body))
+        ]
+    `(fn [~@fixed-args & args#]
+       ~condition-map
+       (let [k# (-> (split-with (comp keyword? first) (partition 2 args#)) first flatten)
+             r# (drop (count k#) args#)
+             {:keys [~@name-syms] :or ~named-map} k#
+             ~extra-arg-name r#
+             ]
+         ~@body*
+         )
+       )
+    )
+  )
+(defmacro defnk [name & decls] `(def ~name (fnk ~@decls)))
+(defmacro defnk- [name & decls] (list* `defnk (with-meta name (assoc (meta name) :private true)) decls))
 
 (def foreach #(doseq [x %2] (%1 x)))
 

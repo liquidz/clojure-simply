@@ -45,3 +45,4 @@
 
 ; =string->regexp
 (defn string->regexp [& s] (java.util.regex.Pattern/compile (apply str s)))
+

@@ -1,5 +1,4 @@
 (ns simply.date
-  ;(:use simply.string)
   (:require [clojure.contrib.string :as st])
   (:import [java.util TimeZone Calendar GregorianCalendar])
   )

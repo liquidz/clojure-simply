@@ -75,6 +75,15 @@
     )
   )
 
+(deftest test-fold
+  (are [x y] (= x y)
+    6 (fold + 0 [1 2 3])
+    10 (fold + 0 [1 2] [3 4])
+    '(c b a) (fold cons () '(a b c))
+    '(9 7 5) (fold (fn [x y res] (cons (+ x y) res)) () [1 2 3] [4 5 6])
+    )
+  )
+
 #_(deftest test-integer
   (are [x y] (= x (integer y))
     10 "10"

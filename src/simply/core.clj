@@ -1,10 +1,12 @@
 (ns simply.core)
 
+; =!
 (defmacro !
   ([v] `(not ~v))
   ([v & more] `(not (~v ~@more)))
   )
 
+; =fnk
 (defmacro fnk [params & body]
   (let [key->sym (comp symbol name)
         [fixed-named-args [_ extra]] (split-with #(not (= % '&)) params)
@@ -29,6 +31,7 @@
 (defmacro defnk [name & decls] `(def ~name (fnk ~@decls)))
 (defmacro defnk- [name & decls] (list* `defnk (with-meta name (assoc (meta name) :private true)) decls))
 
+; =foreach
 (defn foreach [f & colls]
   (if (> (count colls) 1)
     (doseq [x (partition 2 (apply interleave colls))] (apply f x))
@@ -36,6 +39,7 @@
     )
   )
 
+; =fold
 (defn fold [f ini & coll]
   (when (-> coll first empty? not)
     (let [body (fn [res ls]

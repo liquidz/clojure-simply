@@ -1,4 +1,5 @@
 (ns simply.list
+  (:use [simply core])
   (:require [clojure.contrib.seq :as se])
   )
 
@@ -33,6 +34,11 @@
   (deep-map #(let [x (get smap %)] (if (nil? x) % x)) coll)
   )
 
+; =deep-replace-f
+(defn deep-replace-f [f coll]
+  (deep-map #(let [res (f %)] (iff res nil? %)) coll)
+  )
+
 ; =find-index
 (defn find-index
   ([conv pred coll]
@@ -43,3 +49,19 @@
 (def find-first-index (partial find-index identity))
 ; =find-last-index
 (def find-last-index (partial find-index reverse))
+
+; map-map
+(defn map-map [f m]
+  (apply hash-map
+         (reduce (fn [res [k v]]
+                   (concat res [k (f k v)])
+                   ) () m)
+         )
+  )
+
+; =insert
+(defn insert [n val coll]
+  (let [[b a] (split-at n coll)]
+    (concat b (cons val a))
+    )
+  )

@@ -1,4 +1,6 @@
-(ns simply.core)
+(ns simply.core
+  (:use [simply.list :only [insert]])
+  )
 
 ; =!
 (defmacro !
@@ -54,3 +56,23 @@
       )
     )
   )
+
+; =iff
+(defn iff
+  ([f f2] (fn [x] (if (f x) (f2 x) x)))
+  ([x f f2] ((iff f f2) x))
+  )
+
+(defn- base->>?* [val sex add-fn]
+  (reduce (fn [res x]
+            (if (and (list? x) (->> x first (= 'fn*) not))
+              (add-fn res x)
+              (list x res)
+              )
+            ) val sex))
+; =->*
+(defmacro ->* [val & sex]
+  (base->>?* val sex (partial insert 1)))
+; =->>*
+(defmacro ->>* [val & sex]
+  (base->>?* val sex #(concat %2 (list %1))))

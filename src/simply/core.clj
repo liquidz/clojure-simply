@@ -2,10 +2,39 @@
   (:use [simply.list :only [insert]])
   )
 
+; =fold
+(defn fold [f ini & coll]
+  (when (-> coll first empty? not)
+    (let [body (fn [res ls]
+                 (if (-> ls first empty?) res
+                   (recur
+                     (apply f (concat (map first ls) (list res)))
+                     (map #(drop 1 %) ls)
+                     )
+                   )
+                 )]
+      (body ini coll)
+      )
+    )
+  )
+
 ; =!
 (defmacro !
-  ([v] `(not ~v))
+  ([v] `(if (fn? ~v) (fn [& args#] (not (apply ~v args#))) (not ~v)))
   ([v & more] `(not (~v ~@more)))
+  )
+
+; =flatten-with-depth
+(defn flatten-with-depth [n coll]
+  (loop [ls coll, level 0]
+    (if (and (< level n) (some sequential? ls))
+      (recur
+        (fold (fn [x res] (apply concat (list res (if (sequential? x) x (list x))))) () ls)
+        (inc level)
+        )
+      ls
+      )
+    )
   )
 
 ; =fnk
@@ -20,7 +49,7 @@
         ]
     `(fn [~@fixed-args & args#]
        ~condition-map
-       (let [k# (-> (split-with (comp keyword? first) (partition 2 args#)) first flatten)
+       (let [k# (->> (split-with (comp keyword? first) (partition 2 args#)) first (flatten-with-depth 1))
              r# (drop (count k#) args#)
              {:keys [~@name-syms] :or ~named-map} k#
              ~extra-arg-name r#
@@ -38,22 +67,6 @@
   (if (> (count colls) 1)
     (doseq [x (partition 2 (apply interleave colls))] (apply f x))
     (doseq [x (first colls)] (f x))
-    )
-  )
-
-; =fold
-(defn fold [f ini & coll]
-  (when (-> coll first empty? not)
-    (let [body (fn [res ls]
-                 (if (-> ls first empty?) res
-                   (recur
-                     (apply f (concat (map first ls) (list res)))
-                     (map #(drop 1 %) ls)
-                     )
-                   )
-                 )]
-      (body ini coll)
-      )
     )
   )
 

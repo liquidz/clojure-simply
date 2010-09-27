@@ -36,7 +36,7 @@
 
 ; =deep-replace-f
 (defn deep-replace-f [f coll]
-  (deep-map #(let [res (f %)] (iff res nil? %)) coll)
+  (deep-map #(let [res (f %)] (if (nil? res) % res)) coll)
   )
 
 ; =find-index

@@ -2,11 +2,33 @@
   (:use [simply core list regexp string date more] :reload-all)
   (:use [clojure.test]))
 
+(deftest test-fold
+  (are [x y] (= x y)
+    6 (fold + 0 [1 2 3])
+    10 (fold + 0 [1 2] [3 4])
+    '(c b a) (fold cons () '(a b c))
+    '(9 7 5) (fold (fn [a b res] (cons (+ a b) res)) () [1 2 3] [4 5 6])
+    )
+  )
+
+(deftest test-flatten-with-depth
+  (are [x y] (= x y)
+    '(1 2 (3)) (flatten-with-depth 0 '(1 2 (3)))
+    '(1 2 (3)) (flatten-with-depth -1 '(1 2 (3)))
+    '(1 2 3) (flatten-with-depth 1 '(1 2 (3)))
+    '(1 2 3) (flatten-with-depth 10 '(1 2 (3)))
+    '(1 2 3 (4)) (flatten-with-depth 1 '(1 2 (3 (4))))
+    '(1 2 3 4) (flatten-with-depth 2 '(1 2 (3 (4))))
+    '(1 2 3 4) (flatten-with-depth 10 '(1 2 (3 (4))))
+    )
+  )
+
 (deftest test-defnk
   (let [f (fnk [a :b 1 :c 2] (+ a (* b 2) (* c 3)))
         f2 (fnk [a :b 1 :c 2 & more] (- (+ a (* b 2) (* c 3)) (apply + more)))
         f3 (fnk [a b] (+ a b))
         f4 (fnk [& c] (apply + c))
+        f5 (fnk [:ls ()] (reverse ls))
         ]
     (are [x y] (= x y)
       9   (f 1)
@@ -28,6 +50,8 @@
 
       6   (f4 1 2 3)
       10  (f4 1 2 3 4)
+
+      '(3 2 1) (f5 :ls '(1 2 3))
       )
     )
   )
@@ -40,6 +64,8 @@
     false (! = true true)
     true  (! = true false true)
     true  (! = 1 2 3)
+    false ((! nil?) nil)
+    true  ((! nil?) ())
     )
   )
 
@@ -72,23 +98,6 @@
       10 (reduce #(+ (:a %2) %1) 0 a-ls)
       14 (reduce #(+ (:b %2) %1) 0 b-ls)
       )
-    )
-  )
-
-(deftest test-fold
-  (are [x y] (= x y)
-    6 (fold + 0 [1 2 3])
-    10 (fold + 0 [1 2] [3 4])
-    '(c b a) (fold cons () '(a b c))
-    '(9 7 5) (fold (fn [x y res] (cons (+ x y) res)) () [1 2 3] [4 5 6])
-    )
-  )
-
-#_(deftest test-integer
-  (are [x y] (= x (integer y))
-    10 "10"
-    10 '10
-    10 :10
     )
   )
 
